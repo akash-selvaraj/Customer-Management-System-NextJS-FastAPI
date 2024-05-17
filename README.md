@@ -63,10 +63,10 @@ project-root/
 │   └── ...                   # Other backend files
 │
 ├── src/
-	├── app/
-│   	├── page.tsx              # Next.js main page
-│   	└── ...                   # Other Next.js pages
-│
+|   ├── app/
+│   |	├── page.tsx              # Next.js main page
+│   |	└── ...                  # Other Next.js pages
+│   └── ...
 ├── .gitignore                # Git ignore file
 ├── package.json              # Frontend dependencies and scripts
 ├── README.md                 # Project documentation
