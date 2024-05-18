@@ -1,4 +1,5 @@
-![image](https://github.com/akash-selvaraj/orbdoc_assesment/assets/81205378/ef18a9b9-995a-4038-9cdf-12401ac74e13)
+![image](https://github.com/akash-selvaraj/orbdoc_assesment/assets/81205378/4a0e1692-5002-405a-b11d-093a285f25a1)
+
 
 # Customer Management System
 
@@ -12,7 +13,9 @@ This project is a Next.js application integrated with a FastAPI backend. The sys
 - **Prevent Duplicate Entries**: Ensure unique customer entries by using email as a key.
 - **Sort**: Sort customers by clicking on table headers.
 - **Search**: Search for customers by name, email, or favorite number.
+- **Toggle Customer Status**: Activate or deactivate customers.
 - **Notifications**: Toast messages for successful edits, deletions, and duplicate entry prevention.
+
 
 ## Prerequisites
 - Node.js
@@ -115,6 +118,11 @@ project-root/
 
 ### Sorting
 - Click on the table headers to sort the customer list by the selected column.
-
+  
 ### Searching
 - Use the search bar to filter customers by name, email, or favorite number.
+
+### Setting Customer Active/Inactive
+- Use the toggle switch next to each customer to activate or deactivate them.
+- A toast message will confirm the status change.
+
