@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*'], allow_headers=['*'])
@@ -16,13 +16,17 @@ class Customer(BaseModel):
     name: str
     email: str
     fav_number: int
+    active: bool  
 
 def is_duplicate(email: str) -> bool:
     return collection.find_one({'email': email}) is not None
 
 @app.get("/customers", response_model=List[Customer])
 def get_customers():
-    customers = list(collection.find({}, {'_id': 0}))  # Exclude the '_id' field
+    customers = list(collection.find({}, {'_id': 0}))  
+    for customer in customers:
+        if 'active' not in customer:
+            customer['active'] = True  
     return customers
 
 @app.post("/customers", response_model=Customer, status_code=status.HTTP_201_CREATED)
@@ -54,14 +58,30 @@ def delete_customer(email: str):
 def search_customer(query: str):
     search_query = {'$or': [{'name': {'$regex': query, '$options': 'i'}}, {'email': {'$regex': query, '$options': 'i'}}]}
     results = list(collection.find(search_query, {'_id': 0}))
+    for customer in results:
+        if 'active' not in customer:
+            customer['active'] = True 
     return results
 
 @app.get("/customers/sort/{by}", response_model=List[Customer])
 def sort_customers(by: str):
-    if by in ['name', 'email', 'fav_number']:
+    if by in ['name', 'email', 'fav_number', 'active']:
         sorted_customers = list(collection.find().sort(by))
         for customer in sorted_customers:
             customer.pop('_id', None)
+            if 'active' not in customer:
+                customer['active'] = True  
         return sorted_customers
     else:
         raise HTTPException(status_code=400, detail="Invalid sort key")
+
+@app.put("/customers/toggle/{email}", response_model=Customer)
+def toggle_customer_status(email: str):
+    customer = collection.find_one({'email': email})
+    if customer:
+        new_status = not customer.get('active', True)
+        collection.update_one({'email': email}, {'$set': {'active': new_status}})
+        customer['active'] = new_status
+        return customer
+    else:
+        raise HTTPException(status_code=404, detail="Customer not found")
