@@ -1,7 +1,5 @@
-![image](https://github.com/akash-selvaraj/orbdoc_assesment/assets/81205378/4a0e1692-5002-405a-b11d-093a285f25a1)
-
-
 # Customer Management System
+![Typescript](https://github.com/akash-selvaraj/orbdoc_assesment/assets/81205378/e1a3765e-bbbe-44fb-91c2-e2db3c56614b)
 
 ## Overview
 This project is a Next.js application integrated with a FastAPI backend. The system is designed to manage customer information including name, email, and favorite number, and store it in a MongoDB database. The application ensures unique customer entries using email as a unique key. It includes features for adding, editing, deleting, and viewing customers, along with sorting and search functionalities.
