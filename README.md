@@ -100,6 +100,11 @@ project-root/
 - **Method**: `DELETE`
 - **Response**: Success or error message
 
+### Toggle Customer Status
+- **URL**: `/customers/toggle/{email}`
+- **Method**: `PUT`
+- **Response**: JSON object of the customer with updated status or error message if not found
+  
 ## Frontend Functionalities
 
 ### Adding a Customer
