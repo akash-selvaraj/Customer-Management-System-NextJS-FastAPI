@@ -60,7 +60,7 @@ This project is a Next.js application integrated with a FastAPI backend. The sys
     ```
 ### View app on browser
 **Open**
-    ```bash
+    ```
     http://localhost:3000/
     ```
 **in your Browser**
