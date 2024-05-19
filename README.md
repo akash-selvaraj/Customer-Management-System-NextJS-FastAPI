@@ -28,9 +28,13 @@ This project is a Next.js application integrated with a FastAPI backend. The sys
     npm install
     ```
 
-2. **Run Development Server**
+2. **Build App**
     ```bash
-    npm run dev
+    npm run build
+    ```
+3. **Run Server**
+    ```bash
+    npm start
     ```
 
 ### Backend
