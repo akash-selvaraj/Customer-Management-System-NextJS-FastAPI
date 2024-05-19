@@ -56,7 +56,7 @@ This project is a Next.js application integrated with a FastAPI backend. The sys
 
 4. **Run FastAPI Server**
     ```bash
-    uvicorn app:app --reload --host=0.0.0.0 --port=8000
+    uvicorn app:app --host=0.0.0.0 --port=8000
     ```
 ### View app on browser
 **Open**
