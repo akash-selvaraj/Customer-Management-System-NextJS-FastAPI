@@ -58,7 +58,13 @@ This project is a Next.js application integrated with a FastAPI backend. The sys
     ```bash
     uvicorn app:app --reload --host=0.0.0.0 --port=8000
     ```
-
+### View app on browser
+**Open**
+    ```bash
+    http://localhost:3000/
+    ```
+**in your Browser**
+    
 ## Project Structure
 ```plaintext
 project-root/
