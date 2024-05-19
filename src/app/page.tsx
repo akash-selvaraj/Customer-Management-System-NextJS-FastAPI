@@ -1,10 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const SortIcon = ({ direction }) => {
+type Direction = "asc" | "desc" | "none";
+
+interface SortIconProps {
+  direction: Direction;
+}
+
+const SortIcon: React.FC<SortIconProps> = ({ direction }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -22,18 +28,25 @@ const SortIcon = ({ direction }) => {
   );
 };
 
-const Page = () => {
-  const [customers, setCustomers] = useState([]);
-  const [filteredCustomers, setFilteredCustomers] = useState([]);
-  const [formData, setFormData] = useState({
+interface Customer {
+  name: string;
+  email: string;
+  fav_number: string;
+  active: boolean;
+}
+
+const Page: React.FC = () => {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+  const [formData, setFormData] = useState<Customer>({
     name: "",
     email: "",
     fav_number: "",
-    active: true, 
+    active: true,
   });
-  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Customer; direction: Direction }>({
     key: "name",
     direction: "asc",
   });
@@ -51,11 +64,23 @@ const Page = () => {
       const response = await axios.get("http://localhost:8000/customers");
       setCustomers(response.data);
     } catch (error) {
-      console.error("Error fetching customers:", error.message);
+      if (isAxiosError(error)) {
+        console.error("Response data:", error.response?.data);
+        console.error("Response status:", error.response?.status);
+        console.error("Response headers:", error.response?.headers);
+        toast.error("Error fetching customers: " + ((error.response?.data as any).message || "Unknown error"));
+      } else {
+        console.error("Error message:", (error as Error).message);
+        toast.error("Error fetching customers");
+      }
     }
   };
 
-  const handleInputChange = (e) => {
+  const isAxiosError = (error: unknown): error is AxiosError => {
+    return axios.isAxiosError(error);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -63,21 +88,18 @@ const Page = () => {
     });
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     const filtered = customers.filter(
       (customer) =>
         customer.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
         customer.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
-        customer.fav_number
-          .toString()
-          .toLowerCase()
-          .includes(e.target.value.toLowerCase())
+        customer.fav_number.toString().toLowerCase().includes(e.target.value.toLowerCase())
     );
     setFilteredCustomers(filtered);
   };
 
-  const addCustomer = async (e) => {
+  const addCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await axios.post("http://localhost:8000/customers", formData);
@@ -86,73 +108,88 @@ const Page = () => {
         name: "",
         email: "",
         fav_number: "",
-        active: true, 
+        active: true,
       });
       toast.success("Customer added successfully!");
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        toast.error("Error adding customer: Duplicate customer email.");
+      if (isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          toast.error("Error adding customer: Duplicate customer email.");
+        } else {
+          toast.error(`Error adding customer: ${(error.response?.data as any).message || "Unknown error"}`);
+        }
       } else {
-        console.error("Error adding customer:", error.message);
+        console.error("Error message:", (error as Error).message);
+        toast.error("Error adding customer");
       }
     }
   };
 
-  const deleteCustomer = async (email) => {
+  const deleteCustomer = async (email: string) => {
     try {
       await axios.delete(`http://localhost:8000/customers/${email}`);
       fetchCustomers();
       toast.success("Customer deleted successfully!");
     } catch (error) {
-      console.error("Error deleting customer:", error.message);
+      if (isAxiosError(error)) {
+        toast.error(`Error deleting customer: ${(error.response?.data as any).message || "Unknown error"}`);
+      } else {
+        console.error("Error message:", (error as Error).message);
+        toast.error("Error deleting customer");
+      }
     }
   };
 
-  const editCustomer = (customer) => {
+  const editCustomer = (customer: Customer) => {
     setEditingCustomer(customer);
     setFormData({
       name: customer.name,
       email: customer.email,
       fav_number: customer.fav_number,
-      active: customer.active, 
+      active: customer.active,
     });
   };
 
-  const updateCustomer = async (e) => {
+  const updateCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(
-        `http://localhost:8000/customers/${editingCustomer.email}`,
-        formData
-      );
+      await axios.put(`http://localhost:8000/customers/${editingCustomer?.email}`, formData);
       fetchCustomers();
       setFormData({
         name: "",
         email: "",
         fav_number: "",
-        active: true, 
+        active: true,
       });
       setEditingCustomer(null);
       toast.success("Customer updated successfully!");
     } catch (error) {
-      console.error("Error updating customer:", error.message);
+      if (isAxiosError(error)) {
+        toast.error(`Error updating customer: ${(error.response?.data as any).message || "Unknown error"}`);
+      } else {
+        console.error("Error message:", (error as Error).message);
+        toast.error("Error updating customer");
+      }
     }
   };
 
-  const toggleCustomerStatus = async (email, currentStatus) => {
+  const toggleCustomerStatus = async (email: string, currentStatus: boolean) => {
     try {
       await axios.put(`http://localhost:8000/customers/toggle/${email}`);
       fetchCustomers();
-      toast.success(
-        `Customer status updated to ${!currentStatus ? "active" : "inactive"}`
-      );
+      toast.success(`Customer status updated to ${!currentStatus ? "active" : "inactive"}`);
     } catch (error) {
-      console.error("Error toggling customer status:", error.message);
+      if (isAxiosError(error)) {
+        toast.error(`Error toggling customer status: ${(error.response?.data as any).message || "Unknown error"}`);
+      } else {
+        console.error("Error message:", (error as Error).message);
+        toast.error("Error toggling customer status");
+      }
     }
   };
 
-  const sortCustomers = (key) => {
-    let direction = "asc";
+  const sortCustomers = (key: keyof Customer) => {
+    let direction: Direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
     }
@@ -224,41 +261,27 @@ const Page = () => {
                 <th onClick={() => sortCustomers("name")} className="cursor-pointer">
                   <div className="flex items-center">
                     <p>Name</p>
-                    <SortIcon
-                      direction={
-                        sortConfig.key === "name" ? sortConfig.direction : "asc"
-                      }
-                    />
+                    <SortIcon direction={sortConfig.key === "name" ? sortConfig.direction : "asc"} />
                   </div>
                 </th>
                 <th onClick={() => sortCustomers("email")} className="cursor-pointer">
                   <div className="flex items-center">
                     <p>Email</p>
-                    <SortIcon
-                      direction={
-                        sortConfig.key === "email" ? sortConfig.direction : "asc"
-                      }
-                    />
+                    <SortIcon direction={sortConfig.key === "email" ? sortConfig.direction : "asc"} />
                   </div>
                 </th>
                 <th onClick={() => sortCustomers("fav_number")} className="cursor-pointer">
                   <div className="flex items-center">
                     <p>Favorite Number</p>
                     <SortIcon
-                      direction={
-                        sortConfig.key === "fav_number" ? sortConfig.direction : "asc"
-                      }
+                      direction={sortConfig.key === "fav_number" ? sortConfig.direction : "asc"}
                     />
                   </div>
                 </th>
                 <th onClick={() => sortCustomers("active")} className="cursor-pointer">
                   <div className="flex items-center">
                     <p>Active</p>
-                    <SortIcon
-                      direction={
-                        sortConfig.key === "active" ? sortConfig.direction : "asc"
-                      }
-                    />
+                    <SortIcon direction={sortConfig.key === "active" ? sortConfig.direction : "asc"} />
                   </div>
                 </th>
                 <th>Actions</th>
@@ -276,9 +299,7 @@ const Page = () => {
                       <input
                         type="checkbox"
                         checked={customer.active}
-                        onChange={() =>
-                          toggleCustomerStatus(customer.email, customer.active)
-                        }
+                        onChange={() => toggleCustomerStatus(customer.email, customer.active)}
                       />
                       <span className="toggle-slider"></span>
                     </label>
